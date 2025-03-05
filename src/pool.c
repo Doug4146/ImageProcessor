@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h> // For type size_t
-#include <stdalign.h> // For alignof() and max_align_t
 #include "pool.h"
+
 
 
 
 size_t memory_size_alignment(size_t size) {
 
-        // Maximum alignment requirement for processor
-        size_t alignment = alignof(max_align_t);
+        // Alignment requiredment for SIMD (also a multiple of alignment requirement for processor)
+        size_t alignment = MEMORY_ALIGNMENT;
 
         // Adjust size to be a multiple of alignment requirement and return
         return (size + alignment - 1) & ~(alignment - 1);
@@ -19,23 +19,33 @@ size_t memory_size_alignment(size_t size) {
 
 struct MemoryPool *init_memory_pool(size_t desiredSize) {
 
-        // Align the desired memory region sizes to the processor's highest allignment requirment 
+        // Align the desired memory region sizes to proper memory alignment
         size_t alignedSize = memory_size_alignment(desiredSize);
 
         // Create a MemoryPool struct
         struct MemoryPool *pool = (struct MemoryPool*)malloc(sizeof(struct MemoryPool));
         if (pool == NULL) {
-                fprintf(stderr, "\nFatal error: memory ool could not be created.\n");
-		return NULL;
-        }
-
-        // Allocate contiguous memory block for both memory regions
-        pool->memory = (void*) malloc(alignedSize);
-        if (pool->memory == NULL) {
-                free(pool);
                 fprintf(stderr, "\nFatal error: memory pool could not be created.\n");
 		return NULL;
         }
+
+        // Allocate memory for the pool
+        #ifdef _WIN32
+                // For Windows and MinGW, use _aligned_malloc
+                pool->memory = _aligned_malloc(alignedSize, MEMORY_ALIGNMENT);
+                if (pool->memory == NULL) {
+                        free(pool);
+                        fprintf(stderr, "\nFatal error: memory pool could not be created.\n");
+                        return NULL;
+                }
+        #else
+                // For POSIX systems (Linux, macOS), use posix_memalign
+                if (posix_memalign(&pool->memory, MEMORY_ALIGNMENT, alignedSize) != 0) {
+                        free(pool);
+                        fprintf(stderr, "\nFatal error: memory pool could not be created.\n");
+                        return NULL;
+                }
+        #endif
 
         // Initialize the struct fields
         pool->poolSize = alignedSize;
@@ -90,7 +100,14 @@ void empty_pool(struct MemoryPool *pool) {
 
 
 void release_entire_memory_pool(struct MemoryPool *pool) {
-        free(pool->memory);
+
+#ifdef _WIN32
+    // For Windows and MinGW, use _aligned_free
+    _aligned_free(pool->memory);
+#else
+    // For POSIX systems, use free
+    free(pool->memory);
+#endif
         pool->memory = NULL;
         pool->nextFree = NULL;
         free(pool);

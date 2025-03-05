@@ -12,7 +12,7 @@
  */
 typedef struct Window {
         int size;
-        uint8_t *entries;
+        float *entries;
 } Window;
 
 
@@ -64,7 +64,7 @@ struct Window *create_window(int y, int x, int windowSize, int imageHeight, int 
 struct Kernel *create_gaussian_kernel(enum GaussianBlurIntensity blurIntensity);
 
 
-uint8_t compute_convolution(struct Kernel *kernel, struct Window *window);
+uint8_t compute_convolution(float *kernelEntriesArray, float *windowEntriesArray, int arrayLength);
 
 
 int apply_convolution_pipeline(struct ImageRGB *inputImage, struct ImageRGB *outputImage , struct Kernel *kernel);

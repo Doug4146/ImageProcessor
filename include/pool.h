@@ -4,6 +4,14 @@
 #include <stdint.h> // For type size_t
 
 
+#ifdef _WIN32
+    #define MEMORY_ALIGNMENT 32U  // For optimal SIMD handling (on Windows, MinGW)
+#else
+    #define MEMORY_ALIGNMENT 32  // For POSIX systems
+#endif
+
+
+
 /**
  * - Structure for representing a simple memory pool.
  * 

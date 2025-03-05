@@ -176,8 +176,3 @@ void free_imageRGB(struct ImageRGB *image) {
         }
 
 }
-
-
-
-
-
