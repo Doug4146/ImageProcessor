@@ -4,10 +4,6 @@
 #include <stdint.h>
 
 
-// Constant global integer for number of channels per pixel in RGB Image format
-extern const int RGB_NUM_CHANNELS;
-
-
 // Enumeration for valid image file types including png, jpg, and bmp.
 typedef enum FileType {
         FILE_TYPE_PNG,
@@ -34,20 +30,39 @@ typedef struct ImageRGB {
 } ImageRGB;
 
 
+// Structure for a 1-channeled Image (black and white) in structure of arrays form.
+typedef struct ImageOneChannel {
+        int width, height, numChannels;
+        uint8_t *pixels;
+} Image;
+
+
+// Enumeration for the type of image - three channeled (RGB) or one channaled (black/white)
+typedef enum ImageType {
+        IMAGE_TYPE_ONE_CHANNEL,
+        IMAGE_TYPE_THREE_CHANNEL
+} ImageType;
+
+
+
 
 
 // Loads image from disk using stb_image.h. Transforms the loaded image into a struct ImageRGB
 // and returns pointer to the struct
 struct ImageRGB *load_imageRGB(const char *filename);
+struct ImageOneChannel *load_imageOneChannel(const char *filename);
 
 
 struct ImageRGB *load_empty_imageRGB(int width, int height);
+struct ImageOneChannel *load_empty_imageOneChannel(int width, int height);
 
 
 int save_imageRGB(struct ImageRGB *image, const char *filename, ImageFileType fileType);
+int save_imageOneChannel(struct ImageOneChannel *image, const char *filename, ImageFileType fileType);
 
 
 void free_imageRGB(struct ImageRGB *image);
+void free_imageOneChannel(struct ImageOneChannel *image);
 
 
 

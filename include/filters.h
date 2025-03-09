@@ -2,75 +2,32 @@
 #define FILTERS_H
 
 
-#include <stdint.h> // For type uint8_t
-#include "pool.h"  // For struct MemoryPool
+#include "convolution.h"  // For enum GaussianBlurIntensity
 
 
-/**
- * @brief Structure for representing a window (square matrix) used for convolution-based filtering.
- * Contains fields for matrix size and a pointer array of matrix entries (uint8_t).
- */
-typedef struct Window {
-        int size;
-        float *entries;
-} Window;
+// Enumeration for the different filter types 
+typedef enum TypeFilter {
+        FILTER_GREYSCALE,
+        FILTER_GAUSSIAN_BLUR,
+        FILTER_BOX_BLUR,
+        FILTER_EMBOSS,
+        FILTER_SHARPEN,
+        FILTER_SOBEL_EDGE_DETECTION,
+        FILTER_INVALID
+} TypeFilter;
 
 
-/**
- * @brief Structure for representing a kernel (square matrix) used for convolution-based filtering.
- * Contains fields for matrix size and a pointer array of matrix entries (float).
- */
-typedef struct Kernel {
-        int size;
-        float *entries;
-} Kernel;
+// Applies the greyscale filter to an RGB image. Saves results in a created ImageOneChannel struct and frees the input image
+struct ImageOneChannel *apply_filter_greyscale(struct ImageRGB **inputImage);
 
+// Applies a generic convolution based filter (e.g. emboss, sharpen) on an input image. Both input and output image are RGB
+struct ImageRGB *apply_filter_generic_convolution(struct ImageRGB **inputImage, enum TypeFilter typeFilter, enum GeneralFilterIntensity filterIntensity);
 
-/**
- * @brief Enumeration for the different intensity levels of the gaussian blur filter. Each intensity level
- * is assigned a value representing the matrix size of the gaussian kernel. 
- */
-typedef enum GaussianBlurIntensity {
-        BLUR_INTENSITY_VERYLIGHT = 3,  // size = 03, stddev = 0.8
-        BLUR_INTENSITY_LIGHT = 5,      // size = 05, stddev = 1
-        BLUR_INTENSITY_MEDIUM = 9,     // size = 09, stddev = 2
-        BLUR_INTENSITY_HIGH = 13,      // size = 13, stddev = 3
-        BLUR_INTENSITY_VERYHIGH = 25,  // size = 25, stddev = 4
-} GaussianBlurIntensity;
+// Applies the sobel operator filter to an RGB image. Saves results in a created ImageOneChannel struct and frees the input image
+struct ImageOneChannel *apply_filter_sobel_edge_detection(struct ImageRGB **inputImage, enum GeneralFilterIntensity filterIntensity);
 
 
 
-/**
- * @brief Utility function that prints out the elements of the `entries` array in a `Window` structure
- * in rectangular form.
- * @param window Pointer to the Window structure to print.
- */
-void print_window(struct Window *window);
-
-/**
- * @brief Utility function that prints out the elements of the `entries` array in a `Kernelx` structure
- * in rectangular form. 
- * @param Kernel Pointer to the Kernel structure to print.
- */
-void print_kernel(struct Kernel *kernel);
-
-
-struct Window *create_window(int y, int x, int windowSize, int imageHeight, int imageWidth, uint8_t *imageChannelArray, struct MemoryPool *pool);
-
-
-//void shift_window_right(struct ImageRGB *image, struct Window *window, int x, int y, enum ChannelTypeRGB channelType);
-
-
-struct Kernel *create_gaussian_kernel(enum GaussianBlurIntensity blurIntensity);
-
-
-uint8_t compute_convolution(float *kernelEntriesArray, float *windowEntriesArray, int arrayLength);
-
-
-int apply_convolution_pipeline(struct ImageRGB *inputImage, struct ImageRGB *outputImage , struct Kernel *kernel);
-
-
-struct ImageRGB *apply_filter_gaussian_blur(struct ImageRGB **inputImage, enum GaussianBlurIntensity blurIntensity);
 
 
 
