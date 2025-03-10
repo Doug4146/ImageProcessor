@@ -18,14 +18,18 @@ for image loading and saving. Currently only works with png, jpg and bmp image f
    ```bash
    git clone https://github.com/yourusername/your-forked-repo.git
    cd your-forked-repo
-3. **Create a build directory**:
+3. **Create Input and Output Image Directories**:
+   ```bash
+   mkdir input
+   mkdir output
+4. **Create a build directory**:
    ```bash
    mkdir build
    cd build
-4. **Generate build files with CMake**
+5. **Generate build files with CMake**
    ```bash
    cmake .. -G "MinGW Makefiles"
-5. **Build the program**
+6. **Build the program**
    ```bash
    mingw32-make
 
