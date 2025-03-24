@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <windows.h> // For performance benchmarking
 #include <math.h>
 #include <string.h>
 #include "image.h"
@@ -18,6 +19,13 @@ enum GeneralFilterIntensity determine_filter_intensity(const char *intensityName
 
 
 int main(int argc, char *argv[]) {
+
+
+        // Performance benchmarking
+	LARGE_INTEGER frequency, start, end;
+	double elapsedTime = 0.0f;
+	QueryPerformanceFrequency(&frequency); // Get the high-resolution counter's frequency (ticks per second)
+
 
         // Check for invalid number of command line arguments
         if (argc != 5) {
@@ -47,6 +55,9 @@ int main(int argc, char *argv[]) {
         struct ImageRGB *inputImage = load_imageRGB(inputImagePath);
         if (inputImage == NULL) return 1;
 
+        // Start timing
+        QueryPerformanceCounter(&start);
+
         // Apply the desired filter
         struct ImageRGB *outputImageRGB = NULL;
         struct ImageOneChannel *outputImageOneChannel = NULL;
@@ -72,32 +83,35 @@ int main(int argc, char *argv[]) {
                         outputImageType = IMAGE_TYPE_ONE_CHANNEL; break;
         }
 
-        // Save the output image to the output path
-        if (outputImageType == IMAGE_TYPE_ONE_CHANNEL) {
+        QueryPerformanceCounter(&end); // End timing
+        elapsedTime += (double) (end.QuadPart - start.QuadPart) / frequency.QuadPart;
+        printf("Runtime: %.5lf milliseconds.\n", 1000 * elapsedTime);
 
-                if (outputImageOneChannel == NULL) return 1;
-                int saveImage = save_imageOneChannel(outputImageOneChannel, outputImagePath, FILE_TYPE_PNG);
-                if (saveImage == 0) {
-                        free_imageOneChannel(outputImageOneChannel);
-                        return 1;
-                }
 
-                free_imageOneChannel(outputImageOneChannel);
+        // // Save the output image to the output path
+        // if (outputImageType == IMAGE_TYPE_ONE_CHANNEL) {
 
-        } else if (outputImageType == IMAGE_TYPE_THREE_CHANNEL) {
+        //         if (outputImageOneChannel == NULL) return 1;
+        //         int saveImage = save_imageOneChannel(outputImageOneChannel, outputImagePath, FILE_TYPE_PNG);
+        //         if (saveImage == 0) {
+        //                 free_imageOneChannel(outputImageOneChannel);
+        //                 return 1;
+        //         }
 
-                if (outputImageRGB == NULL) return 1;
-                int saveImage = save_imageRGB(outputImageRGB, outputImagePath, FILE_TYPE_PNG);
-                if (saveImage == 0) {
-                        free_imageRGB(outputImageRGB);
-                        return 1;
-                }
+        //         free_imageOneChannel(outputImageOneChannel);
 
-                free_imageRGB(outputImageRGB);
+        // } else if (outputImageType == IMAGE_TYPE_THREE_CHANNEL) {
+
+        //         if (outputImageRGB == NULL) return 1;
+        //         int saveImage = save_imageRGB(outputImageRGB, outputImagePath, FILE_TYPE_PNG);
+        //         if (saveImage == 0) {
+        //                 free_imageRGB(outputImageRGB);
+        //                 return 1;
+        //         }
+
+        //         free_imageRGB(outputImageRGB);
                 
-        }
-
-        printf("Filter applied successfully.\n");
+        // }
 
         // Program executed successfully
         return 0;
